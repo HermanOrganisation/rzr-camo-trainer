@@ -1,20 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Maximize2, Minus, Plus } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  CAMO_COMPONENTS,
-  DISASSEMBLY_ANGLE,
-  resolveAngle,
-  VIEW_ANGLES,
-  type AngleId,
-} from "@/data/rzrTraining";
+import { useEffect } from "react";
+import { CAMO_COMPONENTS, DISASSEMBLY_ANGLE, resolveAngle, VIEW_ANGLES } from "@/data/rzrTraining";
+import { getAsset } from "@/data/rzrAssets";
 import type { TrainingState } from "@/hooks/useTrainingState";
+import { useViewerTransform } from "@/hooks/useViewerTransform";
 import { cn } from "@/lib/utils";
 import { Hotspot } from "./Hotspot";
-import { PartSilhouette, VehiclePart } from "./VehiclePart";
-
-const MIN_ZOOM = 0.7;
-const MAX_ZOOM = 3;
+import { PartReveal, PartSilhouette, VehiclePart } from "./VehiclePart";
 
 interface RZRViewerProps {
   state: TrainingState;
@@ -22,85 +15,26 @@ interface RZRViewerProps {
 }
 
 export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
-  const { mode, angle, stepAngle, setAngle, selected, setSelected, isDetached } = state;
+  const { mode, angle, stepAngle, setAngle, camo, selected, setSelected, isDetached } = state;
   const disassembly = mode === "disassembly";
-  const activeAngle = resolveAngle(disassembly ? DISASSEMBLY_ANGLE : angle);
+  const activeAngle = resolveAngle(disassembly ? DISASSEMBLY_ANGLE : angle, camo);
+  const bareImage = getAsset(camo, "bare");
+  const aspect = activeAngle.aspect ?? 1;
 
-  const stageRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const stateRef = useRef({ zoom, pan, disassembly });
-  stateRef.current = { zoom, pan, disassembly };
-
-  const resetView = useCallback(() => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }, []);
+  const view = useViewerTransform({ onSwipe: stepAngle, swipeEnabled: !disassembly });
+  const { zoom, pan } = view;
 
   useEffect(() => {
-    resetView();
-  }, [mode, resetView]);
+    view.reset();
+  }, [mode, view.reset]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cursor-anchored, delta-normalised wheel/pinch zoom on a non-passive listener.
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
-      const { zoom: z, pan: p } = stateRef.current;
-      const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z * Math.exp(-dy * 0.0016)));
-      const rect = el.getBoundingClientRect();
-      const px = e.clientX - rect.left - rect.width / 2;
-      const py = e.clientY - rect.top - rect.height / 2;
-      const k = next / z;
-      setPan({ x: px - (px - p.x) * k, y: py - (py - p.y) * k });
-      setZoom(next);
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
-
-  // Drag: rotates through the documented frames in inspection mode,
-  // pans the stage when zoomed in.
-  const gesture = useRef<{ x: number; y: number; panX: number; panY: number; used: boolean } | null>(
-    null,
-  );
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest("[data-part],[data-hotspot]")) return;
-    gesture.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y, used: false };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    const g = gesture.current;
-    if (!g) return;
-    const dx = e.clientX - g.x;
-    const dy = e.clientY - g.y;
-    if (stateRef.current.zoom > 1.02) {
-      setPan({ x: g.panX + dx, y: g.panY + dy });
-      return;
-    }
-    if (stateRef.current.disassembly) return;
-    if (!g.used && Math.abs(dx) > 60) {
-      stepAngle(dx < 0 ? 1 : -1);
-      gesture.current = { ...g, x: e.clientX, used: false };
-    }
-  };
-
-  const endGesture = () => {
-    gesture.current = null;
-  };
+  const detachedParts = CAMO_COMPONENTS.filter((c) => isDetached(c.id));
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div
-        ref={stageRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endGesture}
-        onPointerCancel={endGesture}
+        ref={view.stageRef}
+        {...view.handlers}
         className="relative min-h-0 flex-1 touch-none overflow-hidden bg-background select-none [container-type:size]"
         style={{ cursor: zoom > 1.02 ? "grab" : disassembly ? "default" : "ew-resize" }}
       >
@@ -111,7 +45,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
           style={{
             transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
             transformOrigin: "center center",
-            transition: gesture.current ? "none" : "transform 220ms ease-out",
+            transition: view.dragging ? "none" : "transform 220ms ease-out",
           }}
         >
           {/* Vehicle box: matches the photograph's aspect so every %-positioned
@@ -119,8 +53,8 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
           <div
             className="relative"
             style={{
-              aspectRatio: `${activeAngle.aspect ?? 1}`,
-              width: `min(62%, ${(78 * (activeAngle.aspect ?? 1)).toFixed(2)}cqh)`,
+              aspectRatio: `${aspect}`,
+              width: `min(62%, ${(78 * aspect).toFixed(2)}cqh)`,
             }}
           >
             {/* Ground shadow */}
@@ -129,7 +63,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
             {/* Layer 0 — base photograph */}
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.img
-                key={activeAngle.id}
+                key={`${activeAngle.id}-${camo}`}
                 src={activeAngle.image}
                 alt="MRZR fitted with the Armadillo camouflage cover system"
                 draggable={false}
@@ -141,22 +75,26 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
               />
             </AnimatePresence>
 
-            {/* Layers 1–5 — removable covers (exploded view) */}
             {disassembly && (
               <>
+                {/* Layer 6 — uncovered vehicle revealed where a cover was removed */}
                 <AnimatePresence>
-                  {CAMO_COMPONENTS.filter((c) => isDetached(c.id)).map((c) => (
-                    <PartSilhouette key={c.id} component={c} />
-                  ))}
+                  {detachedParts.map((c) =>
+                    bareImage ? (
+                      <PartReveal key={c.id} component={c} bareImage={bareImage} />
+                    ) : (
+                      <PartSilhouette key={c.id} component={c} />
+                    ),
+                  )}
                 </AnimatePresence>
 
-                {/* Layer 7 — technical leader lines */}
+                {/* Layer 30 — technical leader lines */}
                 <svg
                   className="pointer-events-none absolute inset-0 z-30 h-full w-full"
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
                 >
-                  {CAMO_COMPONENTS.filter((c) => isDetached(c.id)).map((c) => {
+                  {detachedParts.map((c) => {
                     const cx = c.region.left + c.region.width / 2;
                     const cy = c.region.top + c.region.height / 2;
                     return (
@@ -176,6 +114,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
                   })}
                 </svg>
 
+                {/* Layers 10+ — removable covers */}
                 {CAMO_COMPONENTS.map((c) => (
                   <div key={c.id} data-part>
                     <VehiclePart
@@ -183,17 +122,15 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
                       image={activeAngle.image ?? ""}
                       detached={isDetached(c.id)}
                       selected={selected === c.id}
-                      interactive
                       onSelect={setSelected}
-                      onDetach={state.detachPart}
-                      onAttach={state.attachPart}
+                      onSetDetached={state.setPartDetached}
                     />
                   </div>
                 ))}
               </>
             )}
 
-            {/* Layer 6 — hotspots */}
+            {/* Layer 40 — hotspots */}
             {!disassembly &&
               CAMO_COMPONENTS.map((c) => (
                 <div key={c.id} data-hotspot>
@@ -219,13 +156,13 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
 
         {/* Zoom cluster */}
         <div className="absolute right-4 top-4 z-40 flex flex-col border border-hairline bg-panel/80 backdrop-blur-sm">
-          <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z * 1.2))}>
+          <IconBtn label="Zoom in" onClick={view.zoomIn}>
             <Plus className="h-3.5 w-3.5" />
           </IconBtn>
-          <IconBtn label="Zoom out" onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z / 1.2))}>
+          <IconBtn label="Zoom out" onClick={view.zoomOut}>
             <Minus className="h-3.5 w-3.5" />
           </IconBtn>
-          <IconBtn label="Reset view" onClick={resetView}>
+          <IconBtn label="Reset view" onClick={view.reset}>
             <Maximize2 className="h-3.5 w-3.5" />
           </IconBtn>
         </div>
@@ -245,15 +182,16 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           {VIEW_ANGLES.map((a) => (
-            <AngleButton
+            <TechButton
               key={a.id}
-              id={a.id}
-              label={a.label}
-              available={a.available}
               active={!disassembly && angle === a.id}
+              disabled={!a.available || disassembly}
+              title={a.available ? undefined : "No photography available for this angle yet"}
               onClick={() => setAngle(a.id)}
-              disabled={disassembly}
-            />
+            >
+              {a.label}
+              {!a.available && <span className="ml-1.5 text-[8px] opacity-70">NO ASSET</span>}
+            </TechButton>
           ))}
         </div>
       </div>
@@ -261,38 +199,36 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
   );
 }
 
-function AngleButton({
-  label,
-  available,
+/** Shared tactical button used by the angle and camouflage selectors. */
+export function TechButton({
   active,
-  onClick,
   disabled,
+  title,
+  onClick,
+  children,
 }: {
-  id: AngleId;
-  label: string;
-  available: boolean;
   active: boolean;
+  disabled?: boolean;
+  title?: string | undefined;
   onClick: () => void;
-  disabled: boolean;
+  children: React.ReactNode;
 }) {
-  const off = !available || disabled;
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={off}
-      title={available ? undefined : "No photography available for this angle yet"}
+      disabled={disabled}
+      title={title}
       className={cn(
         "label-tech border px-2.5 py-1.5 transition-colors",
         active
           ? "border-amber bg-amber/15 text-amber"
-          : off
+          : disabled
             ? "cursor-not-allowed border-hairline text-muted-foreground/40"
             : "border-hairline text-muted-foreground hover:border-olive hover:text-foreground",
       )}
     >
-      {label}
-      {!available && <span className="ml-1.5 text-[8px] opacity-70">NO ASSET</span>}
+      {children}
     </button>
   );
 }

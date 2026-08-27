@@ -1,12 +1,20 @@
 import type { CSSProperties } from "react";
 import type { Region } from "@/data/rzrTraining";
 
+interface BoxStyle {
+  left: string;
+  top: string;
+  width: string;
+  height: string;
+  zIndex?: number;
+}
+
 /**
  * Positions a box over `region` of the vehicle photograph.
  * All coordinates are % of the vehicle box, so overlays stay aligned at
  * any viewport size.
  */
-export function regionStyle(region: Region, zIndex?: number): CSSProperties {
+export function regionStyle(region: Region, zIndex?: number): BoxStyle {
   return {
     left: `${region.left}%`,
     top: `${region.top}%`,
