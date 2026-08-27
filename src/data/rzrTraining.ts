@@ -103,7 +103,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
 ];
 
 /** The frame the exploded-view interface is authored against. */
-export const DISASSEMBLY_ANGLE: AngleId = "front";
+export const DISASSEMBLY_ANGLE: AngleId = "front-camo";
 
 export function resolveAngle(id: AngleId): ViewAngle {
   const angle = VIEW_ANGLES.find((a) => a.id === id) ?? VIEW_ANGLES[1]!;
