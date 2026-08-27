@@ -59,6 +59,15 @@ export const VIEW_ANGLES: ViewAngle[] = [
     available: true,
   },
   {
+    id: "front-camo",
+    label: "FRONT CAMO",
+    readout: "FRONT — 000° / CAMO PATTERN",
+    degrees: 0,
+    image: RZR_ASSETS.frontCamoCovered,
+    aspect: 1018 / 962,
+    available: true,
+  },
+  {
     id: "front-open",
     label: "COVER OPEN",
     readout: "FRONT — 000° / COVER OPEN",
