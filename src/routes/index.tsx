@@ -83,8 +83,9 @@ function TrainingApp() {
               <ModeSelector mode={state.mode} onChange={state.setMode} />
               <CamoSelector camo={state.camo} onChange={state.setCamo} />
             </div>
-
+            <div className="flex items-center gap-2">
               <ResetVehicleButton
+
                 onReset={state.resetVehicle}
                 disabled={state.detached.length === 0}
               />
