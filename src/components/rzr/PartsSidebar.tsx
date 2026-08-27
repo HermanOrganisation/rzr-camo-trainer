@@ -1,7 +1,8 @@
 import { CheckCircle2, ChevronRight } from "lucide-react";
-import { CAMO_COMPONENTS } from "@/data/rzrTraining";
+import { CAMO_COMPONENTS, DISASSEMBLY_ANGLE, resolveAngle } from "@/data/rzrTraining";
 import type { TrainingState } from "@/hooks/useTrainingState";
 import { cn } from "@/lib/utils";
+import { ComponentImage } from "./ComponentImage";
 
 export function PartsSidebar({
   state,
@@ -10,8 +11,9 @@ export function PartsSidebar({
   state: TrainingState;
   onOpenTraining: (id: string) => void;
 }) {
-  const { mode, selected, setSelected, isDetached, toggleDetached, completed } = state;
+  const { mode, camo, selected, setSelected, isDetached, togglePart, completed } = state;
   const disassembly = mode === "disassembly";
+  const reference = resolveAngle(DISASSEMBLY_ANGLE, camo);
 
   return (
     <div className="flex h-full flex-col">
@@ -39,13 +41,24 @@ export function PartsSidebar({
                 type="button"
                 onClick={() => {
                   setSelected(c.id);
-                  if (disassembly) toggleDetached(c.id);
+                  if (disassembly) togglePart(c.id);
                 }}
-                className="flex w-full items-start gap-3 px-4 py-3 text-left"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left"
               >
+                <ComponentImage
+                  component={c}
+                  camo={camo}
+                  vehicleImage={reference.image}
+                  vehicleAspect={reference.aspect ?? 1}
+                  className={cn(
+                    "h-10 max-w-16 shrink-0 transition-opacity",
+                    detached ? "opacity-40" : "opacity-100",
+                  )}
+
+                />
                 <span
                   className={cn(
-                    "label-tech mt-0.5 border px-1.5 py-0.5",
+                    "label-tech border px-1.5 py-0.5",
                     active
                       ? "border-amber text-amber"
                       : "border-hairline text-muted-foreground group-hover:border-olive",
@@ -64,7 +77,7 @@ export function PartsSidebar({
                     {active && <span className="text-amber">ACTIVE</span>}
                   </span>
                 </span>
-                {done && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-olive" />}
+                {done && <CheckCircle2 className="h-4 w-4 shrink-0 text-olive" />}
               </button>
               <button
                 type="button"

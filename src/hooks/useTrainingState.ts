@@ -6,19 +6,31 @@ import {
   VIEW_ANGLES,
   type AngleId,
 } from "@/data/rzrTraining";
+import type { CamoPattern } from "@/data/rzrAssets";
 
 export type ViewerMode = "inspection" | "disassembly";
 
-const STORAGE_KEY = "rzr-camo-training-v1";
+const STORAGE_KEY = "rzr-camo-training-v2";
 
 interface Persisted {
   completed: string[];
   coachDismissed: boolean;
+  camo: CamoPattern;
+}
+
+function readPersisted(): Partial<Persisted> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<Persisted>) : {};
+  } catch {
+    return {};
+  }
 }
 
 export function useTrainingState() {
   const [mode, setModeRaw] = useState<ViewerMode>("inspection");
   const [angle, setAngle] = useState<AngleId>("front-34");
+  const [camo, setCamo] = useState<CamoPattern>("forest");
   const [selected, setSelected] = useState<string | null>(null);
   const [detached, setDetached] = useState<string[]>([]);
   const [completed, setCompleted] = useState<string[]>([]);
@@ -27,37 +39,31 @@ export function useTrainingState() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<Persisted>;
-        if (Array.isArray(parsed.completed)) setCompleted(parsed.completed);
-        if (typeof parsed.coachDismissed === "boolean") setCoachDismissed(parsed.coachDismissed);
-      }
-    } catch {
-      /* ignore unreadable storage */
-    }
+    const saved = readPersisted();
+    if (Array.isArray(saved.completed)) setCompleted(saved.completed);
+    if (typeof saved.coachDismissed === "boolean") setCoachDismissed(saved.coachDismissed);
+    if (saved.camo === "forest" || saved.camo === "desert") setCamo(saved.camo);
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ completed, coachDismissed }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ completed, coachDismissed, camo }));
     } catch {
       /* ignore write failures */
     }
-  }, [completed, coachDismissed, hydrated]);
+  }, [completed, coachDismissed, camo, hydrated]);
 
   const setMode = useCallback(
     (next: ViewerMode) => {
       setModeRaw(next);
-      if (next === "disassembly") {
-        setAngle(DISASSEMBLY_ANGLE);
-        if (!coachDismissed) setCoachOpen(true);
-      } else {
+      if (next !== "disassembly") {
         setCoachOpen(false);
+        return;
       }
+      setAngle(DISASSEMBLY_ANGLE);
+      if (!coachDismissed) setCoachOpen(true);
     },
     [coachDismissed],
   );
@@ -66,22 +72,17 @@ export function useTrainingState() {
     setAngle((current) => {
       const usable = VIEW_ANGLES.filter((a) => a.available);
       const index = usable.findIndex((a) => a.id === current);
-      const next = usable[(index + direction + usable.length) % usable.length];
-      return next ? next.id : current;
+      return usable[(index + direction + usable.length) % usable.length]?.id ?? current;
     });
   }, []);
 
   const isDetached = useCallback((id: string) => detached.includes(id), [detached]);
 
-  const detachPart = useCallback((id: string) => {
-    setDetached((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const setPartDetached = useCallback((id: string, next: boolean) => {
+    setDetached((prev) => (next ? [...new Set([...prev, id])] : prev.filter((p) => p !== id)));
   }, []);
 
-  const attachPart = useCallback((id: string) => {
-    setDetached((prev) => prev.filter((p) => p !== id));
-  }, []);
-
-  const toggleDetached = useCallback((id: string) => {
+  const togglePart = useCallback((id: string) => {
     setDetached((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   }, []);
 
@@ -110,13 +111,14 @@ export function useTrainingState() {
     angle,
     setAngle,
     stepAngle,
+    camo,
+    setCamo,
     selected,
     setSelected,
     detached,
     isDetached,
-    detachPart,
-    attachPart,
-    toggleDetached,
+    setPartDetached,
+    togglePart,
     resetVehicle,
     completed,
     markComplete,

@@ -1,21 +1,4 @@
-import baseFront from "@/assets/MRZR_front_armadillo_copy.jpg.asset.json";
-import frontCoverOpen from "@/assets/MRZR_front_armadillo_t.png.asset.json";
-import frontThreeQuarter from "@/assets/MRZR_front_armadillo_t_side.png.asset.json";
-import isolatedCover from "@/assets/MRZR_front_armadillo_infrastructure_t.png.asset.json";
-import frontCamoCovered from "@/assets/MRZR_front_armadillo_front_covered_nobg.png.asset.json";
-
-/**
- * ASSET REGISTRY
- * All vehicle photography flows through this map. Replacing or adding
- * photography is a one-line change here plus a VIEW_ANGLES entry.
- */
-export const RZR_ASSETS = {
-  baseFront: baseFront.url,
-  frontCoverOpen: frontCoverOpen.url,
-  frontThreeQuarter: frontThreeQuarter.url,
-  isolatedCover: isolatedCover.url,
-  frontCamoCovered: frontCamoCovered.url,
-} as const;
+import { getAsset, type AssetKey, type CamoPattern } from "./rzrAssets";
 
 export type AngleId = "front-34" | "front-camo" | "front-open" | "left" | "right" | "rear";
 
@@ -26,8 +9,8 @@ export interface ViewAngle {
   /** Long technical label: "VIEW ANGLE: FRONT — 000°" */
   readout: string;
   degrees: number;
-  /** Undefined when no photography exists for this angle yet */
-  image?: string | undefined;
+  /** Which photograph of the active camouflage set this angle shows */
+  assetKey?: AssetKey | undefined;
   /** Intrinsic aspect ratio of the photograph, used to keep overlays aligned */
   aspect?: number | undefined;
   available: boolean;
@@ -37,7 +20,7 @@ export interface ViewAngle {
 
 /**
  * Ordered left-to-right as a simulated rotation. Add real LEFT / RIGHT / REAR
- * photography by filling in `image` + `aspect` and flipping `available`.
+ * photography by filling in `assetKey` + `aspect` and flipping `available`.
  */
 export const VIEW_ANGLES: ViewAngle[] = [
   {
@@ -45,7 +28,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
     label: "FRONT 3/4",
     readout: "FRONT 3/4 — 045°",
     degrees: 45,
-    image: RZR_ASSETS.frontThreeQuarter,
+    assetKey: "front34",
     aspect: 1443 / 1090,
     available: true,
   },
@@ -54,7 +37,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
     label: "FRONT CAMO",
     readout: "FRONT — 000° / CAMO PATTERN",
     degrees: 0,
-    image: RZR_ASSETS.frontCamoCovered,
+    assetKey: "frontCamo",
     aspect: 1024 / 1024,
     available: true,
   },
@@ -63,7 +46,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
     label: "COVER OPEN",
     readout: "FRONT — 000° / COVER OPEN",
     degrees: 0,
-    image: RZR_ASSETS.frontCoverOpen,
+    assetKey: "markiza",
     aspect: 973 / 962,
     available: true,
   },
@@ -96,12 +79,24 @@ export const VIEW_ANGLES: ViewAngle[] = [
 /** The frame the exploded-view interface is authored against. */
 export const DISASSEMBLY_ANGLE: AngleId = "front-camo";
 
-export function resolveAngle(id: AngleId): ViewAngle {
-  const angle = VIEW_ANGLES.find((a) => a.id === id) ?? VIEW_ANGLES[0]!;
-  if (angle.available) return angle;
-  const fb = VIEW_ANGLES.find((a) => a.id === angle.fallback);
-  return fb ? { ...angle, image: fb.image, aspect: fb.aspect } : angle;
+export interface ResolvedAngle extends ViewAngle {
+  /** Photograph for the active camouflage pattern, if one exists */
+  image?: string | undefined;
 }
+
+/** Resolves an angle to a concrete photograph of the active camouflage set. */
+export function resolveAngle(id: AngleId, camo: CamoPattern): ResolvedAngle {
+  const angle = VIEW_ANGLES.find((a) => a.id === id) ?? VIEW_ANGLES[0]!;
+  const source = angle.available
+    ? angle
+    : (VIEW_ANGLES.find((a) => a.id === angle.fallback) ?? angle);
+  return {
+    ...angle,
+    aspect: source.aspect,
+    image: source.assetKey ? getAsset(camo, source.assetKey) : undefined,
+  };
+}
+
 
 /** Region of the FRONT photograph, in % of the vehicle box. */
 export interface Region {

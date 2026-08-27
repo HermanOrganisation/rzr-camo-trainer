@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CircleHelp, X } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { CamoSelector } from "@/components/rzr/CamoSelector";
 import { DisassemblyCoach } from "@/components/rzr/DisassemblyCoach";
+
 import { ModeSelector } from "@/components/rzr/ModeSelector";
 import { PartsSidebar } from "@/components/rzr/PartsSidebar";
 import { ProgressIndicator } from "@/components/rzr/ProgressIndicator";
@@ -79,9 +81,13 @@ function TrainingApp() {
         {/* MAIN COLUMN */}
         <main className="relative flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-6">
-            <ModeSelector mode={state.mode} onChange={state.setMode} />
+            <div className="flex flex-wrap items-center gap-3">
+              <ModeSelector mode={state.mode} onChange={state.setMode} />
+              <CamoSelector camo={state.camo} onChange={state.setCamo} />
+            </div>
             <div className="flex items-center gap-2">
               <ResetVehicleButton
+
                 onReset={state.resetVehicle}
                 disabled={state.detached.length === 0}
               />
@@ -145,6 +151,8 @@ function TrainingApp() {
       {/* TRAINING MODAL */}
       <TrainingModal
         component={modalComponent}
+        camo={state.camo}
+
         completed={modalId ? state.completed.includes(modalId) : false}
         detached={modalId ? state.isDetached(modalId) : false}
         onClose={() => setModalId(null)}

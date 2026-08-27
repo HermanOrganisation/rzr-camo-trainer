@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { CamoComponent } from "@/data/rzrTraining";
+import { cropStyle, regionStyle } from "@/lib/vehicleGeometry";
 import { cn } from "@/lib/utils";
 
 interface VehiclePartProps {
@@ -8,45 +9,34 @@ interface VehiclePartProps {
   image: string;
   detached: boolean;
   selected: boolean;
-  interactive: boolean;
   onSelect: (id: string) => void;
-  onDetach: (id: string) => void;
-  onAttach: (id: string) => void;
+  onSetDetached: (id: string, detached: boolean) => void;
 }
 
 const DRAG_THRESHOLD = 42;
 
 /**
  * A removable camouflage layer. The visual is a cropped region of the base
- * photograph, so the part is always the real product imagery — never a
- * reconstruction. Outer element animates install/detach; inner element handles
- * the drag gesture so the two transforms never fight.
+ * photograph, so the part is always the real product imagery. The outer
+ * element animates install/detach; the inner element handles the drag gesture
+ * so the two transforms never fight.
  */
 export function VehiclePart({
   component,
   image,
   detached,
   selected,
-  interactive,
   onSelect,
-  onDetach,
-  onAttach,
+  onSetDetached,
 }: VehiclePartProps) {
   const { region, detached: park } = component;
   const [dragging, setDragging] = useState(false);
   const [dragHint, setDragHint] = useState<"x" | "y" | null>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
 
   return (
     <motion.div
       className="absolute"
-      style={{
-        left: `${region.left}%`,
-        top: `${region.top}%`,
-        width: `${region.width}%`,
-        height: `${region.height}%`,
-        zIndex: 10 + component.layer,
-      }}
+      style={regionStyle(region, 10 + component.layer)}
       animate={{
         // park.x / park.y are % of the vehicle box; motion's % is % of the
         // element, so rescale by the crop size.
@@ -65,12 +55,11 @@ export function VehiclePart({
       }}
     >
       <motion.div
-        ref={boxRef}
         className={cn(
           "relative h-full w-full overflow-hidden",
-          interactive ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
+          detached ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
         )}
-        drag={interactive && !detached}
+        drag={!detached}
         dragSnapToOrigin
         dragElastic={0.45}
         dragMomentum={false}
@@ -84,17 +73,16 @@ export function VehiclePart({
         onDragEnd={(_, info) => {
           setDragging(false);
           setDragHint(null);
-          const travelled = Math.hypot(info.offset.x, info.offset.y);
-          if (travelled >= DRAG_THRESHOLD) onDetach(component.id);
+          if (Math.hypot(info.offset.x, info.offset.y) >= DRAG_THRESHOLD) {
+            onSetDetached(component.id, true);
+          }
         }}
         animate={{ scale: dragging ? 1.05 : 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
         onClick={() => {
           if (dragging) return;
           onSelect(component.id);
-          if (!interactive) return;
-          if (detached) onAttach(component.id);
-          else onDetach(component.id);
+          onSetDetached(component.id, !detached);
         }}
       >
         {/* Cropped photograph: sized so this box shows exactly `region`. */}
@@ -103,26 +91,27 @@ export function VehiclePart({
           alt=""
           draggable={false}
           className="pointer-events-none absolute select-none"
-          style={{
-            width: `${(100 / region.width) * 100}%`,
-            height: `${(100 / region.height) * 100}%`,
-            maxWidth: "none",
-            maxHeight: "none",
-            left: `${(-region.left / region.width) * 100}%`,
-            top: `${(-region.top / region.height) * 100}%`,
-          }}
+          style={cropStyle(region)}
         />
         <div
           className={cn(
             "pointer-events-none absolute inset-0 transition-all duration-300",
-            dragging && "ring-2 ring-amber",
-            !dragging && selected && "ring-1 ring-amber/70",
-            !dragging && !selected && interactive && "ring-1 ring-olive/0 hover:ring-olive",
+            dragging
+              ? "ring-2 ring-amber"
+              : selected
+                ? "ring-1 ring-amber/70"
+                : "ring-1 ring-olive/0 hover:ring-olive",
           )}
         />
         {dragHint && (
           <div className="label-tech pointer-events-none absolute bottom-1 left-1 bg-background/80 px-1 py-0.5 text-amber">
-            {dragHint === "x" ? (park.x < 0 ? "◀ REMOVE" : "REMOVE ▶") : park.y < 0 ? "▲ LIFT" : "▼ LOWER"}
+            {dragHint === "x"
+              ? park.x < 0
+                ? "◀ REMOVE"
+                : "REMOVE ▶"
+              : park.y < 0
+                ? "▲ LIFT"
+                : "▼ LOWER"}
           </div>
         )}
       </motion.div>
@@ -131,12 +120,45 @@ export function VehiclePart({
 }
 
 /**
- * Marks the vacated mounting area. The photography does not document the
- * structure behind every cover, so the region is drawn as a neutral technical
- * silhouette instead of invented mechanical detail.
+ * Reveals the uncovered vehicle in the area a detached cover used to occupy,
+ * by cropping the bare-vehicle photograph to that same region.
+ */
+export function PartReveal({
+  component,
+  bareImage,
+}: {
+  component: CamoComponent;
+  bareImage: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+      className="pointer-events-none absolute overflow-hidden ring-1 ring-amber/40"
+      style={regionStyle(component.region, 6)}
+    >
+      <img
+        src={bareImage}
+        alt=""
+        draggable={false}
+        className="absolute select-none"
+        style={cropStyle(component.region)}
+      />
+      <span className="label-tech absolute left-1 top-1 bg-background/70 px-1 text-amber/80">
+        {component.code} EXPOSED
+      </span>
+    </motion.div>
+  );
+}
+
+/**
+ * Fallback for when no uncovered-vehicle photography is on file: marks the
+ * vacated mounting area as a neutral technical silhouette instead of invented
+ * mechanical detail.
  */
 export function PartSilhouette({ component }: { component: CamoComponent }) {
-  const { region } = component;
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -144,13 +166,7 @@ export function PartSilhouette({ component }: { component: CamoComponent }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
       className="tech-hatch pointer-events-none absolute border border-dashed border-khaki/25 bg-background/55"
-      style={{
-        left: `${region.left}%`,
-        top: `${region.top}%`,
-        width: `${region.width}%`,
-        height: `${region.height}%`,
-        zIndex: 6,
-      }}
+      style={regionStyle(component.region, 6)}
     >
       <span className="label-tech absolute left-1 top-1 text-khaki/50">
         {component.code} MOUNT — VACANT
