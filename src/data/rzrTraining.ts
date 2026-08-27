@@ -17,7 +17,7 @@ export const RZR_ASSETS = {
   frontCamoCovered: frontCamoCovered.url,
 } as const;
 
-export type AngleId = "front-34" | "front" | "front-camo" | "front-open" | "left" | "right" | "rear";
+export type AngleId = "front-34" | "front-camo" | "front-open" | "left" | "right" | "rear";
 
 export interface ViewAngle {
   id: AngleId;
@@ -47,15 +47,6 @@ export const VIEW_ANGLES: ViewAngle[] = [
     degrees: 45,
     image: RZR_ASSETS.frontThreeQuarter,
     aspect: 1443 / 1090,
-    available: true,
-  },
-  {
-    id: "front",
-    label: "FRONT",
-    readout: "FRONT — 000°",
-    degrees: 0,
-    image: RZR_ASSETS.baseFront,
-    aspect: 1018 / 962,
     available: true,
   },
   {
@@ -90,7 +81,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
     readout: "RIGHT — 090° / NO ASSET",
     degrees: 90,
     available: false,
-    fallback: "front",
+    fallback: "front-camo",
   },
   {
     id: "rear",
@@ -106,7 +97,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
 export const DISASSEMBLY_ANGLE: AngleId = "front-camo";
 
 export function resolveAngle(id: AngleId): ViewAngle {
-  const angle = VIEW_ANGLES.find((a) => a.id === id) ?? VIEW_ANGLES[1]!;
+  const angle = VIEW_ANGLES.find((a) => a.id === id) ?? VIEW_ANGLES[0]!;
   if (angle.available) return angle;
   const fb = VIEW_ANGLES.find((a) => a.id === angle.fallback);
   return fb ? { ...angle, image: fb.image, aspect: fb.aspect } : angle;
