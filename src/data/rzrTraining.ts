@@ -14,9 +14,10 @@ export const RZR_ASSETS = {
   frontCoverOpen: frontCoverOpen.url,
   frontThreeQuarter: frontThreeQuarter.url,
   isolatedCover: isolatedCover.url,
+  frontCamoCovered: frontCamoCovered.url,
 } as const;
 
-export type AngleId = "front-34" | "front" | "front-open" | "left" | "right" | "rear";
+export type AngleId = "front-34" | "front" | "front-camo" | "front-open" | "left" | "right" | "rear";
 
 export interface ViewAngle {
   id: AngleId;
