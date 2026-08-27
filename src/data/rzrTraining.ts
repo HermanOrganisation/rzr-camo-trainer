@@ -2,6 +2,7 @@ import baseFront from "@/assets/MRZR_front_armadillo_copy.jpg.asset.json";
 import frontCoverOpen from "@/assets/MRZR_front_armadillo_t.png.asset.json";
 import frontThreeQuarter from "@/assets/MRZR_front_armadillo_t_side.png.asset.json";
 import isolatedCover from "@/assets/MRZR_front_armadillo_infrastructure_t.png.asset.json";
+import frontCamoCovered from "@/assets/MRZR_front_armadillo_cront_covered.png.asset.json";
 
 /**
  * ASSET REGISTRY
