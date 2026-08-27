@@ -106,6 +106,8 @@ export function VehiclePart({
           style={{
             width: `${(100 / region.width) * 100}%`,
             height: `${(100 / region.height) * 100}%`,
+            maxWidth: "none",
+            maxHeight: "none",
             left: `${(-region.left / region.width) * 100}%`,
             top: `${(-region.top / region.height) * 100}%`,
           }}

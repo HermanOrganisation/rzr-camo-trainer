@@ -101,7 +101,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
         onPointerMove={onPointerMove}
         onPointerUp={endGesture}
         onPointerCancel={endGesture}
-        className="tech-grid relative min-h-0 flex-1 touch-none overflow-hidden bg-background select-none"
+        className="tech-grid relative min-h-0 flex-1 touch-none overflow-hidden bg-background select-none [container-type:size]"
         style={{ cursor: zoom > 1.02 ? "grab" : disassembly ? "default" : "ew-resize" }}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,var(--background)_100%)]" />
@@ -118,7 +118,10 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
               overlay stays aligned at any viewport size. */}
           <div
             className="relative"
-            style={{ aspectRatio: `${activeAngle.aspect ?? 1}`, height: "78%", maxWidth: "62%" }}
+            style={{
+              aspectRatio: `${activeAngle.aspect ?? 1}`,
+              width: `min(62%, ${(78 * (activeAngle.aspect ?? 1)).toFixed(2)}cqh)`,
+            }}
           >
             {/* Ground shadow */}
             <div className="pointer-events-none absolute bottom-[-3%] left-1/2 h-[7%] w-[74%] -translate-x-1/2 rounded-[50%] bg-black/70 blur-xl" />
