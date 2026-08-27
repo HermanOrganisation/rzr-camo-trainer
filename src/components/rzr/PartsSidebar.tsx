@@ -51,9 +51,10 @@ export function PartsSidebar({
                   vehicleImage={reference.image}
                   vehicleAspect={reference.aspect ?? 1}
                   className={cn(
-                    "h-10 shrink-0 transition-opacity",
+                    "h-10 max-w-16 shrink-0 transition-opacity",
                     detached ? "opacity-40" : "opacity-100",
                   )}
+
                 />
                 <span
                   className={cn(
