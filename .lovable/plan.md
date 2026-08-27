@@ -1,16 +1,17 @@
 # RZR Camouflage System — Interactive Product Training
 
-A single full-screen dark tactical training interface built around your three uploaded photographs. No generated or stock vehicle imagery anywhere.
+A single full-screen dark tactical training interface built around your four uploaded photographs. No generated or stock vehicle imagery anywhere.
 
 ## What your images give us (and what they don't)
 
 | Image | Role in the app |
 |---|---|
-| `MRZR_front_armadillo_copy.jpg` — fully covered front view | Layer 0 base vehicle, "FRONT — 000°" |
-| `MRZR_front_armadillo_t.png` — front view, right cover detached/hanging | Second inspection viewpoint + visual reference for the "cover removed" state |
-| `MRZR_front_armadillo_infrastructure_t.png` — isolated camo cover | The detached-component visual, reused per part |
+| `MRZR_front_armadillo_copy.jpg` — fully covered front view | Layer 0 base vehicle, `FRONT — 000°` |
+| `MRZR_front_armadillo_t_side.png` — front 3/4 view | `FRONT 3/4 — 045°` viewpoint, the hero frame on first load |
+| `MRZR_front_armadillo_t.png` — front view, right cover detached/hanging | `FRONT — COVER OPEN` frame + reference for the "cover removed" state |
+| `MRZR_front_armadillo_infrastructure_t.png` — isolated camo cover | The detached-component visual, cropped/scaled per part |
 
-All three are front-facing. There is no left, right, or rear photography, so the 360° viewer will be an honest two-view frame set: `FRONT` and `FRONT (COVER OPEN)` are live; `LEFT`, `RIGHT`, `REAR` render as disabled angle buttons labelled `NO ASSET` that fall back to the nearest available front view rather than inventing a different vehicle. The angle set is a single data array, so dropping in more photos later enables those buttons with no code change.
+The frame set is therefore three real viewpoints: `FRONT 3/4 — 045°`, `FRONT — 000°`, and `FRONT — COVER OPEN`. There is still no true left, right, or rear photography, so `LEFT`, `RIGHT`, and `REAR` render as disabled angle buttons labelled `NO ASSET` and fall back to the nearest available view rather than inventing a different vehicle. Angles live in a single data array, so dropping in more photos later enables those buttons with no code change.
 
 Same honesty rule for the exploded view: detached parts are drawn using the isolated cover photo (cropped/scaled per part), and the area vacated on the vehicle gets a subtle dark technical silhouette with a hatch pattern and an `UNDOCUMENTED STRUCTURE` micro-label instead of fabricated mechanical detail.
 
@@ -58,4 +59,4 @@ Near-black/charcoal ground, slate panels, military olive and muted khaki, amber 
 - Angle frames in `src/data/viewAngles.ts` with an `available` flag driving the disabled angle buttons.
 - State in a single reducer hook (`useTrainingState`) — mode, angle, zoom/pan, per-part status, completion, coach dismissal — with localStorage persistence for completion + coach only.
 - Framer Motion for springs/stagger/crossfade, Lucide for icons, Tailwind v4 tokens added to `src/styles.css` (tactical palette, no hardcoded colour classes).
-- The three uploads are registered as CDN assets and imported as pointers, kept in a small `assets` map so replacement photography is a one-line swap.
+- All four uploads are registered as CDN assets and imported as pointers, kept in a small `assets` map so replacement photography is a one-line swap.
