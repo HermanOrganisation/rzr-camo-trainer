@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CircleHelp, X } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { CamoSelector } from "@/components/rzr/CamoSelector";
 import { DisassemblyCoach } from "@/components/rzr/DisassemblyCoach";
+
 import { ModeSelector } from "@/components/rzr/ModeSelector";
 import { PartsSidebar } from "@/components/rzr/PartsSidebar";
 import { ProgressIndicator } from "@/components/rzr/ProgressIndicator";
