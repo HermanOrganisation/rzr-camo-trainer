@@ -48,8 +48,10 @@ export function VehiclePart({
         zIndex: 10 + component.layer,
       }}
       animate={{
-        x: detached ? `${park.x}%` : "0%",
-        y: detached ? `${park.y}%` : "0%",
+        // park.x / park.y are % of the vehicle box; motion's % is % of the
+        // element, so rescale by the crop size.
+        x: detached ? `${(park.x / region.width) * 100}%` : "0%",
+        y: detached ? `${(park.y / region.height) * 100}%` : "0%",
         rotate: detached ? park.rotate : 0,
         scale: detached ? 0.92 : 1,
       }}
