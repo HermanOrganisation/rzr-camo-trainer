@@ -124,6 +124,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
                       selected={selected === c.id}
                       onSelect={setSelected}
                       onSetDetached={state.setPartDetached}
+                      lockReason={state.getLockReason(c.id)}
                     />
                   </div>
                 ))}

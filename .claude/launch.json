@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rzr-camo-trainer-dev",
+      "runtimeExecutable": "C:\\Users\\USER\\Documents\\GitHub\\rzr-camo-trainer\\.claude\\dev-launcher.cmd",
+      "runtimeArgs": [],
+      "port": 8080
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronRight, Lock } from "lucide-react";
 import { CAMO_COMPONENTS, DISASSEMBLY_ANGLE, resolveAngle } from "@/data/rzrTraining";
 import type { TrainingState } from "@/hooks/useTrainingState";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,8 @@ export function PartsSidebar({
   state: TrainingState;
   onOpenTraining: (id: string) => void;
 }) {
-  const { mode, camo, selected, setSelected, isDetached, togglePart, completed } = state;
+  const { mode, camo, selected, setSelected, isDetached, togglePart, completed, getLockReason } =
+    state;
   const disassembly = mode === "disassembly";
   const reference = resolveAngle(DISASSEMBLY_ANGLE, camo);
 
@@ -29,6 +30,7 @@ export function PartsSidebar({
           const detached = isDetached(c.id);
           const active = selected === c.id;
           const done = completed.includes(c.id);
+          const lockReason = disassembly ? getLockReason(c.id) : null;
           return (
             <div
               key={c.id}
@@ -41,8 +43,9 @@ export function PartsSidebar({
                 type="button"
                 onClick={() => {
                   setSelected(c.id);
-                  if (disassembly) togglePart(c.id);
+                  if (disassembly && !lockReason) togglePart(c.id);
                 }}
+                title={lockReason ?? undefined}
                 className="flex w-full items-center gap-3 px-4 py-3 text-left"
               >
                 <ComponentImage
@@ -74,6 +77,12 @@ export function PartsSidebar({
                     <span className={detached ? "text-khaki" : "text-olive"}>
                       {detached ? "○ DETACHED" : "● INSTALLED"}
                     </span>
+                    {lockReason && (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Lock className="h-2.5 w-2.5" />
+                        LOCKED
+                      </span>
+                    )}
                     {active && <span className="text-amber">ACTIVE</span>}
                   </span>
                 </span>

@@ -706,3 +706,20 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+### Images not loading locally
+
+Product photography is stored on Lovable's asset CDN, not committed to this
+repo — `src/assets/**/*.png.asset.json` are pointer files, not images. The
+dev server proxies them at `/__l5e/assets-v1/*`, but only when the
+`LOVABLE_PREVIEW_HOST` environment variable is set to this project's preview
+host:
+
+```
+LOVABLE_PREVIEW_HOST=id-preview--2ef7f8fa-ae4c-47d9-a782-23770ec1b550.lovable.app
+```
+
+Set it once as a permanent environment variable on your machine (e.g. on
+Windows: `setx LOVABLE_PREVIEW_HOST "id-preview--2ef7f8fa-ae4c-47d9-a782-23770ec1b550.lovable.app"`,
+then open a new terminal) so every local `npm run dev` picks it up. Without
+it, product images silently 404 and the UI shows "NO ASSET".

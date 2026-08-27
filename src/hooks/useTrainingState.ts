@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CAMO_COMPONENTS,
   DISASSEMBLY_ANGLE,
+  resolveLock,
   TOTAL_COMPONENTS,
   VIEW_ANGLES,
   type AngleId,
@@ -78,13 +79,31 @@ export function useTrainingState() {
 
   const isDetached = useCallback((id: string) => detached.includes(id), [detached]);
 
-  const setPartDetached = useCallback((id: string, next: boolean) => {
-    setDetached((prev) => (next ? [...new Set([...prev, id])] : prev.filter((p) => p !== id)));
-  }, []);
+  /** Reason the next toggle on `id` would be blocked, or null if it's allowed. */
+  const getLockReason = useCallback(
+    (id: string): string | null => {
+      const component = CAMO_COMPONENTS.find((c) => c.id === id);
+      if (!component) return null;
+      return resolveLock(component, !detached.includes(id), detached);
+    },
+    [detached],
+  );
 
-  const togglePart = useCallback((id: string) => {
-    setDetached((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
-  }, []);
+  const setPartDetached = useCallback(
+    (id: string, next: boolean) => {
+      const component = CAMO_COMPONENTS.find((c) => c.id === id);
+      if (component && resolveLock(component, next, detached)) return;
+      setDetached((prev) => (next ? [...new Set([...prev, id])] : prev.filter((p) => p !== id)));
+    },
+    [detached],
+  );
+
+  const togglePart = useCallback(
+    (id: string) => {
+      setPartDetached(id, !detached.includes(id));
+    },
+    [detached, setPartDetached],
+  );
 
   const resetVehicle = useCallback(() => {
     setDetached([]);
@@ -117,6 +136,7 @@ export function useTrainingState() {
     setSelected,
     detached,
     isDetached,
+    getLockReason,
     setPartDetached,
     togglePart,
     resetVehicle,

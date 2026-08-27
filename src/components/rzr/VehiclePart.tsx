@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Lock } from "lucide-react";
 import { useState } from "react";
 import type { CamoComponent } from "@/data/rzrTraining";
 import { cropStyle, regionStyle } from "@/lib/vehicleGeometry";
@@ -11,6 +12,8 @@ interface VehiclePartProps {
   selected: boolean;
   onSelect: (id: string) => void;
   onSetDetached: (id: string, detached: boolean) => void;
+  /** Reason the next detach/attach on this part is blocked, or null/undefined if allowed. */
+  lockReason?: string | null;
 }
 
 const DRAG_THRESHOLD = 42;
@@ -28,10 +31,12 @@ export function VehiclePart({
   selected,
   onSelect,
   onSetDetached,
+  lockReason,
 }: VehiclePartProps) {
   const { region, detached: park } = component;
   const [dragging, setDragging] = useState(false);
   const [dragHint, setDragHint] = useState<"x" | "y" | null>(null);
+  const locked = !!lockReason;
 
   return (
     <motion.div
@@ -57,9 +62,13 @@ export function VehiclePart({
       <motion.div
         className={cn(
           "relative h-full w-full overflow-hidden",
-          detached ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
+          locked
+            ? "cursor-not-allowed"
+            : detached
+              ? "cursor-pointer"
+              : "cursor-grab active:cursor-grabbing",
         )}
-        drag={!detached}
+        drag={!detached && !locked}
         dragSnapToOrigin
         dragElastic={0.45}
         dragMomentum={false}
@@ -82,6 +91,7 @@ export function VehiclePart({
         onClick={() => {
           if (dragging) return;
           onSelect(component.id);
+          if (locked) return;
           onSetDetached(component.id, !detached);
         }}
       >
@@ -112,6 +122,15 @@ export function VehiclePart({
               : park.y < 0
                 ? "▲ LIFT"
                 : "▼ LOWER"}
+          </div>
+        )}
+        {locked && (
+          <div
+            className="label-tech pointer-events-none absolute bottom-1 left-1 flex items-center gap-1 bg-background/80 px-1 py-0.5 text-muted-foreground"
+            title={lockReason ?? undefined}
+          >
+            <Lock className="h-2.5 w-2.5" />
+            LOCKED
           </div>
         )}
       </motion.div>
