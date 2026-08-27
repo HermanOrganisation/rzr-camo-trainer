@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Clock, Gauge, Play, X } from "lucide-react";
-import { RZR_ASSETS, type CamoComponent } from "@/data/rzrTraining";
+import { getAsset, type CamoPattern } from "@/data/rzrAssets";
+import { DISASSEMBLY_ANGLE, resolveAngle, type CamoComponent } from "@/data/rzrTraining";
 import { cn } from "@/lib/utils";
+import { ComponentImage } from "./ComponentImage";
 
 interface TrainingModalProps {
   component: CamoComponent | null;
+  camo: CamoPattern;
   completed: boolean;
   detached: boolean;
   onClose: () => void;
@@ -13,11 +16,14 @@ interface TrainingModalProps {
 
 export function TrainingModal({
   component,
+  camo,
   completed,
   detached,
   onClose,
   onComplete,
 }: TrainingModalProps) {
+  const reference = resolveAngle(DISASSEMBLY_ANGLE, camo);
+
   return (
     <AnimatePresence>
       {component && (
@@ -58,7 +64,7 @@ export function TrainingModal({
                 <div className="label-tech mb-2 text-khaki">TRAINING VIDEO</div>
                 <div className="tech-grid-fine relative aspect-video w-full overflow-hidden border border-hairline bg-background">
                   <img
-                    src={RZR_ASSETS.isolatedCover}
+                    src={getAsset(camo, "infrastructure")}
                     alt=""
                     className="absolute inset-0 h-full w-full object-contain opacity-20"
                   />
@@ -90,17 +96,14 @@ export function TrainingModal({
               </div>
 
               <div className="flex flex-col">
-                <div className="label-tech mb-2 text-khaki">REMOVAL PROCEDURE</div>
-                <ol className="space-y-3">
-                  {component.steps.map((step, i) => (
-                    <li key={step} className="flex gap-3">
-                      <span className="label-tech mt-0.5 grid h-5 w-5 shrink-0 place-items-center border border-hairline text-muted-foreground">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="text-sm leading-relaxed text-foreground/85">{step}</span>
-                    </li>
-                  ))}
-                </ol>
+                <div className="label-tech mb-2 text-khaki">COMPONENT REFERENCE</div>
+                <ComponentImage
+                  component={component}
+                  camo={camo}
+                  vehicleImage={reference.image}
+                  vehicleAspect={reference.aspect ?? 1}
+                  className="w-full"
+                />
 
                 <div className="label-tech mt-5 border border-hairline bg-background/40 px-3 py-2 text-muted-foreground">
                   CURRENT STATE:{" "}
