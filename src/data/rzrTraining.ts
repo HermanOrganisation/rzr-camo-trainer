@@ -2,6 +2,7 @@ import baseFront from "@/assets/MRZR_front_armadillo_copy.jpg.asset.json";
 import frontCoverOpen from "@/assets/MRZR_front_armadillo_t.png.asset.json";
 import frontThreeQuarter from "@/assets/MRZR_front_armadillo_t_side.png.asset.json";
 import isolatedCover from "@/assets/MRZR_front_armadillo_infrastructure_t.png.asset.json";
+import frontCamoCovered from "@/assets/MRZR_front_armadillo_cront_covered.png.asset.json";
 
 /**
  * ASSET REGISTRY
@@ -13,9 +14,10 @@ export const RZR_ASSETS = {
   frontCoverOpen: frontCoverOpen.url,
   frontThreeQuarter: frontThreeQuarter.url,
   isolatedCover: isolatedCover.url,
+  frontCamoCovered: frontCamoCovered.url,
 } as const;
 
-export type AngleId = "front-34" | "front" | "front-open" | "left" | "right" | "rear";
+export type AngleId = "front-34" | "front" | "front-camo" | "front-open" | "left" | "right" | "rear";
 
 export interface ViewAngle {
   id: AngleId;
@@ -53,6 +55,15 @@ export const VIEW_ANGLES: ViewAngle[] = [
     readout: "FRONT — 000°",
     degrees: 0,
     image: RZR_ASSETS.baseFront,
+    aspect: 1018 / 962,
+    available: true,
+  },
+  {
+    id: "front-camo",
+    label: "FRONT CAMO",
+    readout: "FRONT — 000° / CAMO PATTERN",
+    degrees: 0,
+    image: RZR_ASSETS.frontCamoCovered,
     aspect: 1018 / 962,
     available: true,
   },
