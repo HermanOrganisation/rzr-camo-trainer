@@ -2,7 +2,7 @@ import baseFront from "@/assets/MRZR_front_armadillo_copy.jpg.asset.json";
 import frontCoverOpen from "@/assets/MRZR_front_armadillo_t.png.asset.json";
 import frontThreeQuarter from "@/assets/MRZR_front_armadillo_t_side.png.asset.json";
 import isolatedCover from "@/assets/MRZR_front_armadillo_infrastructure_t.png.asset.json";
-import frontCamoCovered from "@/assets/MRZR_front_armadillo_cront_covered.png.asset.json";
+import frontCamoCovered from "@/assets/MRZR_front_armadillo_front_covered_nobg.png.asset.json";
 
 /**
  * ASSET REGISTRY
@@ -64,7 +64,7 @@ export const VIEW_ANGLES: ViewAngle[] = [
     readout: "FRONT — 000° / CAMO PATTERN",
     degrees: 0,
     image: RZR_ASSETS.frontCamoCovered,
-    aspect: 1018 / 962,
+    aspect: 1024 / 1024,
     available: true,
   },
   {
@@ -150,9 +150,9 @@ export const CAMO_COMPONENTS: CamoComponent[] = [
     code: "01",
     name: "Front Grille / Hood Camouflage Cover",
     shortName: "Front Grille / Hood",
-    region: { left: 38, top: 40, width: 25, height: 18 },
+    region: { left: 38.9, top: 40.7, width: 26, height: 17.8 },
     detached: { x: -4, y: 30, rotate: -4 },
-    hotspot: { x: 51, y: 49 },
+    hotspot: { x: 52.4, y: 49.6 },
     layer: 1,
     estTime: "02:00",
     difficulty: "BASIC",
@@ -170,9 +170,9 @@ export const CAMO_COMPONENTS: CamoComponent[] = [
     code: "02",
     name: "Left Front Camouflage Panel",
     shortName: "Left Panel",
-    region: { left: 1, top: 30, width: 41, height: 43 },
+    region: { left: 0.4, top: 30.8, width: 42.6, height: 42.5 },
     detached: { x: -30, y: 10, rotate: -6 },
-    hotspot: { x: 20, y: 52 },
+    hotspot: { x: 20.2, y: 52.6 },
     layer: 2,
     estTime: "02:30",
     difficulty: "BASIC",
@@ -190,9 +190,9 @@ export const CAMO_COMPONENTS: CamoComponent[] = [
     code: "03",
     name: "Right Front Camouflage Panel",
     shortName: "Right Panel",
-    region: { left: 55, top: 33, width: 44, height: 41 },
+    region: { left: 56.5, top: 33.8, width: 45.7, height: 40.5 },
     detached: { x: 30, y: 10, rotate: 6 },
-    hotspot: { x: 78, y: 54 },
+    hotspot: { x: 80.4, y: 54.5 },
     layer: 3,
     estTime: "02:30",
     difficulty: "BASIC",
@@ -210,9 +210,9 @@ export const CAMO_COMPONENTS: CamoComponent[] = [
     code: "04",
     name: "Roof / Windshield Camouflage Netting",
     shortName: "Roof / Windshield",
-    region: { left: 30, top: 9, width: 45, height: 22 },
+    region: { left: 30.5, top: 10.1, width: 46.8, height: 21.7 },
     detached: { x: -2, y: -19, rotate: 0 },
-    hotspot: { x: 52, y: 20 },
+    hotspot: { x: 53.4, y: 20.9 },
     layer: 4,
     estTime: "03:15",
     difficulty: "INTERMEDIATE",
@@ -230,9 +230,9 @@ export const CAMO_COMPONENTS: CamoComponent[] = [
     code: "05",
     name: "Rear Cargo / Engine Camouflage Cover",
     shortName: "Rear Cargo / Engine",
-    region: { left: 33, top: 8, width: 41, height: 7 },
+    region: { left: 33.7, top: 9.1, width: 42.6, height: 6.9 },
     detached: { x: 26, y: -17, rotate: 4 },
-    hotspot: { x: 53, y: 11 },
+    hotspot: { x: 54.5, y: 12.1 },
     layer: 5,
     estTime: "02:45",
     difficulty: "INTERMEDIATE",
