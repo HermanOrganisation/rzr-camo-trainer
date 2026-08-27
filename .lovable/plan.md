@@ -59,4 +59,4 @@ Near-black/charcoal ground, slate panels, military olive and muted khaki, amber 
 - Angle frames in `src/data/viewAngles.ts` with an `available` flag driving the disabled angle buttons.
 - State in a single reducer hook (`useTrainingState`) — mode, angle, zoom/pan, per-part status, completion, coach dismissal — with localStorage persistence for completion + coach only.
 - Framer Motion for springs/stagger/crossfade, Lucide for icons, Tailwind v4 tokens added to `src/styles.css` (tactical palette, no hardcoded colour classes).
-- The three uploads are registered as CDN assets and imported as pointers, kept in a small `assets` map so replacement photography is a one-line swap.
+- All four uploads are registered as CDN assets and imported as pointers, kept in a small `assets` map so replacement photography is a one-line swap.
