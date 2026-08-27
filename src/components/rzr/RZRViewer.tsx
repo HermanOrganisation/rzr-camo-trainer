@@ -101,7 +101,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
         onPointerMove={onPointerMove}
         onPointerUp={endGesture}
         onPointerCancel={endGesture}
-        className="tech-grid relative min-h-0 flex-1 touch-none overflow-hidden bg-background select-none [container-type:size]"
+        className="relative min-h-0 flex-1 touch-none overflow-hidden bg-background select-none [container-type:size]"
         style={{ cursor: zoom > 1.02 ? "grab" : disassembly ? "default" : "ew-resize" }}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,var(--background)_100%)]" />
