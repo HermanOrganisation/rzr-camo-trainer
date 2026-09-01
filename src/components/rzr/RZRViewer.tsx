@@ -19,6 +19,7 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
   const disassembly = mode === "disassembly";
   const activeAngle = resolveAngle(disassembly ? DISASSEMBLY_ANGLE : angle, camo);
   const bareImage = getAsset(camo, "bare");
+  const skeletonImage = getAsset(camo, "wheelSkeleton");
   const aspect = activeAngle.aspect ?? 1;
 
   const view = useViewerTransform({ onSwipe: stepAngle, swipeEnabled: !disassembly });
