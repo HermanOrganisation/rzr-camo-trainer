@@ -173,6 +173,41 @@ export function PartReveal({
 }
 
 /**
+ * Reveals the bare wheel structure under a detached wheel camouflage case, by
+ * cropping the wheel-skeleton photograph to the component's skeleton region.
+ */
+export function PartSkeletonReveal({
+  component,
+  skeletonImage,
+}: {
+  component: CamoComponent;
+  skeletonImage: string;
+}) {
+  const skeleton = component.skeletonRegion ?? component.region;
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+      className="pointer-events-none absolute overflow-hidden ring-1 ring-khaki/40"
+      style={regionStyle(component.region, 6)}
+    >
+      <img
+        src={skeletonImage}
+        alt=""
+        draggable={false}
+        className="absolute select-none"
+        style={cropStyle(skeleton)}
+      />
+      <span className="label-tech absolute left-1 top-1 bg-background/70 px-1 text-khaki">
+        {component.code} SKELETON
+      </span>
+    </motion.div>
+  );
+}
+
+/**
  * Fallback for when no uncovered-vehicle photography is on file: marks the
  * vacated mounting area as a neutral technical silhouette instead of invented
  * mechanical detail.
