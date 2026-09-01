@@ -39,6 +39,8 @@ export type AssetKey =
   | "markiza"
   /** Isolated cover component */
   | "infrastructure"
+  /** Bare wheel structure shown under a removed wheel camouflage case */
+  | "wheelSkeleton"
   /** Uncovered vehicle, same framing as frontCamo */
   | "bare";
 
@@ -50,6 +52,9 @@ const ASSETS: Record<CamoPattern, AssetSet> = {
     front34: forestThreeQuarter.url,
     markiza: forestMarkiza.url,
     infrastructure: forestInfrastructure.url,
+    // Until dedicated wheel-skeleton photography is on file, the
+    // infrastructure frame stands in for the uncovered wheel structure.
+    wheelSkeleton: forestInfrastructure.url,
     // bare: pending upload of the uncovered MRZR photograph
   },
   desert: {
