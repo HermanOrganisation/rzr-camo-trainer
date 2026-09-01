@@ -112,8 +112,16 @@ export interface CamoComponent {
   code: string;
   name: string;
   shortName: string;
+  /** Catalogue part number, verbatim. Absent where none is assigned yet. */
+  partNumber?: string;
   /** Cropped area of the base photograph that forms this removable layer */
   region: Region;
+  /**
+   * Region of the wheel-skeleton photograph revealed once this cover is
+   * detached. Only set for parts with dedicated skeleton imagery; everything
+   * else falls back to the bare-vehicle reveal or the vacant-mount silhouette.
+   */
+  skeletonRegion?: Region;
   /** Where the detached layer parks, in % of the vehicle box */
   detached: { x: number; y: number; rotate: number };
   /** Hotspot anchor, in % of the vehicle box */
