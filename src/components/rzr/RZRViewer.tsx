@@ -78,10 +78,17 @@ export function RZRViewer({ state, onOpenTraining }: RZRViewerProps) {
 
             {disassembly && (
               <>
-                {/* Layer 6 — uncovered vehicle revealed where a cover was removed */}
+                {/* Layer 6 — what sits under a removed cover: the wheel
+                    skeleton, the uncovered vehicle, or a vacant mount. */}
                 <AnimatePresence>
                   {detachedParts.map((c) =>
-                    bareImage ? (
+                    c.skeletonRegion && skeletonImage ? (
+                      <PartSkeletonReveal
+                        key={c.id}
+                        component={c}
+                        skeletonImage={skeletonImage}
+                      />
+                    ) : bareImage ? (
                       <PartReveal key={c.id} component={c} bareImage={bareImage} />
                     ) : (
                       <PartSilhouette key={c.id} component={c} />
