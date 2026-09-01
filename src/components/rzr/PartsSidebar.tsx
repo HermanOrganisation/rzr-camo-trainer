@@ -73,6 +73,11 @@ export function PartsSidebar({
                   <span className="block truncate text-sm font-medium text-foreground">
                     {c.shortName}
                   </span>
+                  {c.partNumber && (
+                    <span className="label-tech mt-0.5 block truncate text-muted-foreground">
+                      P/N {c.partNumber}
+                    </span>
+                  )}
                   <span className="label-tech mt-1 flex items-center gap-2">
                     <span className={detached ? "text-khaki" : "text-olive"}>
                       {detached ? "○ DETACHED" : "● INSTALLED"}
