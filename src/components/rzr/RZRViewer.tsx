@@ -7,7 +7,7 @@ import type { TrainingState } from "@/hooks/useTrainingState";
 import { useViewerTransform } from "@/hooks/useViewerTransform";
 import { cn } from "@/lib/utils";
 import { Hotspot } from "./Hotspot";
-import { PartReveal, PartSilhouette, VehiclePart } from "./VehiclePart";
+import { PartReveal, PartSilhouette, PartSkeletonReveal, VehiclePart } from "./VehiclePart";
 
 interface RZRViewerProps {
   state: TrainingState;
