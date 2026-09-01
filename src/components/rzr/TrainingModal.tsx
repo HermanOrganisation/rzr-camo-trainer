@@ -48,6 +48,11 @@ export function TrainingModal({
                 <h2 className="mt-1 text-lg font-semibold uppercase tracking-wide text-foreground sm:text-xl">
                   {component.name}
                 </h2>
+                {component.partNumber && (
+                  <div className="label-tech mt-1 text-muted-foreground">
+                    P/N {component.partNumber}
+                  </div>
+                )}
               </div>
               <button
                 type="button"
